@@ -1,14 +1,35 @@
 package utn.trabajoPracticoIntegrador.config;
 
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Properties;
 
 public class DatabaseConnection {
-    //Datos de la conexión
-    private static final String URL = "jdbc:mysql://localhost:3306/db_integrador";
-    private static final String USER = "usuario_hospital";
-    private static final String PASSWORD = "abc123";
+    //Datos de la conexión, que se leeran de resources/db.properties
+    private static Properties properties;
+    private static String URL;
+    private static String USER;
+    private static String PASSWORD;
+
+    static {
+        try (InputStream input = DatabaseConnection.class.getClassLoader().getResourceAsStream("db.properties")) {
+
+            properties = new Properties();
+            properties.load(input);
+            if (input == null){
+                throw new RuntimeException("Error: No se encontró el archivo db.properties");
+            }
+
+            URL = properties.getProperty("db.url");
+            USER = properties.getProperty("db.user");
+            PASSWORD = properties.getProperty("db.password");
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error: No se pudo cargar db.properties" , e);
+        }
+    }
 
     static {
         try {
@@ -21,16 +42,12 @@ public class DatabaseConnection {
     }
 
     /**
-     * Método para obtener una conexión con la base de datos
+     * Metodo para obtener una conexión con la base de datos
      * @return Connection si la conexión es exitosa.
-     * @throws SQLException Si hay un error en la conexión.
+     * @throws SQLException Si hay un error en la configuracion.
      */
     public static Connection getConnection() throws SQLException {
-        if (URL == null || URL.isEmpty() || USER == null || USER.isEmpty() || PASSWORD == null || PASSWORD.isEmpty()){
-            throw new SQLException("Configuracion de la base de datos incompleta o invalida.");
-        }
         return DriverManager.getConnection(URL, USER, PASSWORD);
     }
-
-
+    
 }
