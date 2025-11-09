@@ -1,6 +1,5 @@
 package utn.trabajoPracticoIntegrador.dao;
 
-import utn.trabajoPracticoIntegrador.entities.HistoriaClinica;
 import utn.trabajoPracticoIntegrador.entities.Paciente;
 
 import java.sql.*;
