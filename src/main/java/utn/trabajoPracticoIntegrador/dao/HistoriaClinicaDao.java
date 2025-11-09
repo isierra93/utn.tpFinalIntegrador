@@ -54,7 +54,7 @@ public class HistoriaClinicaDao implements GenericDao<HistoriaClinica> {
             pstmt.setString(2, entidad.getNroHistoria());
             
             // --- Conversión de Enum a String ---
-            pstmt.setString(3, entidad.getGrupoSanguineo().name()); 
+            pstmt.setString(3, entidad.getGrupoSanguineo().getValorDb());
             
             pstmt.setString(4, entidad.getAntecedentes());
             pstmt.setString(5, entidad.getMedicacionActual());
@@ -138,7 +138,7 @@ public class HistoriaClinicaDao implements GenericDao<HistoriaClinica> {
         
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, entidad.getNroHistoria());
-            pstmt.setString(2, entidad.getGrupoSanguineo().name()); // Enum a String
+            pstmt.setString(2, entidad.getGrupoSanguineo().getValorDb()); // Enum a String
             pstmt.setString(3, entidad.getAntecedentes());
             pstmt.setString(4, entidad.getMedicacionActual());
             pstmt.setString(5, entidad.getObservaciones());
@@ -182,7 +182,7 @@ public class HistoriaClinicaDao implements GenericDao<HistoriaClinica> {
         String nroHistoria = rs.getString("nroHistoria");
         
         // --- Conversión de String a Enum ---
-        GrupoSanguineo gs = GrupoSanguineo.valueOf(rs.getString("grupoSanguineo")); 
+        GrupoSanguineo gs = GrupoSanguineo.fromValue(rs.getString("grupoSanguineo"));
         
         String antecedentes = rs.getString("antecedentes");
         String medicacionActual = rs.getString("medicacionActual");

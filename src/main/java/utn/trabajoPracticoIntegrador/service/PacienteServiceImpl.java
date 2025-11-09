@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package utn.trabajoPracticoIntegrador.config.service;
+package utn.trabajoPracticoIntegrador.service;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -176,5 +176,12 @@ public class PacienteServiceImpl implements GenericService<Paciente> {
     @Override
     public List<Paciente> getAll() throws SQLException {
         return pacienteDao.leerTodos();
+    }
+    public Paciente getByDni(String dni) throws SQLException {
+        // Llama al método simple del DAO (que abre y cierra su propia conexión)
+        // o, mejor, reutiliza el que ya tenías para validación
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            return pacienteDao.getByDni(dni, conn);
+        }
     }
 }

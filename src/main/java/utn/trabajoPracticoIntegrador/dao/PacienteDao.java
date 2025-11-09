@@ -186,7 +186,7 @@ public class PacienteDao implements GenericDao<Paciente> {
                 historiaId,
                 result.getBoolean("h_eliminado"),
                 result.getString("nroHistoria"),
-                GrupoSanguineo.valueOf(result.getString("grupoSanguineo")),
+                GrupoSanguineo.fromValue(result.getString("grupoSanguineo")), // Conversión de String a Enum,
                 result.getString("antecedentes"),
                 result.getString("medicacionActual"),
                 result.getString("observaciones")
