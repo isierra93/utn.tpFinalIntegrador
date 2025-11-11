@@ -117,13 +117,14 @@ public class PacienteDao implements GenericDao<Paciente>{
         }
     }
 
-    @Override//Buscar con el id el paciente en la db y setear su eliminado en true
+    @Override
     public void eliminar(long id) {
         //Try with resources para preparar la conexion y cerrarla al terminar
         try (Connection conn = DatabaseConnection.getConnection()) {
-            String sql = "UPDATE paciente SET eliminado = ?";
-            try () {
-
+            String sql = "UPDATE paciente SET eliminado = true WHERE id = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setLong(1, id);
+                pstmt.executeUpdate();
             }
         } catch (SQLException e) {
             throw new RuntimeException("Error al eliminar paciente.", e);
