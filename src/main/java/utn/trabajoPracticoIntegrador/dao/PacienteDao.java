@@ -94,11 +94,39 @@ public class PacienteDao implements GenericDao<Paciente>{
 
     @Override
     public void actualizar(Paciente entidad) {
+        //Try with resources para preparar la conexion y cerrarla al terminar
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            String sql = "UPDATE paciente SET eliminado = ?," +
+                    " nombre = ?, " +
+                    "apellido = ?, " +
+                    "dni = ?, " +
+                    "fechaNacimiento = ? " +
+                    "WHERE id = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setBoolean(1, entidad.isEliminado());
+                pstmt.setString(2, entidad.getNombre());
+                pstmt.setString(3, entidad.getApellido());
+                pstmt.setString(4, entidad.getDni());
+                pstmt.setDate(5, Date.valueOf(entidad.getFechaNacimiento()));
+                pstmt.setLong(6, entidad.getId());
+                pstmt.executeUpdate();
 
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al actualizar paciente.", e);
+        }
     }
 
-    @Override
+    @Override//Buscar con el id el paciente en la db y setear su eliminado en true
     public void eliminar(long id) {
+        //Try with resources para preparar la conexion y cerrarla al terminar
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            String sql = "UPDATE paciente SET eliminado = ?";
+            try () {
 
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al eliminar paciente.", e);
+        }
     }
 }
