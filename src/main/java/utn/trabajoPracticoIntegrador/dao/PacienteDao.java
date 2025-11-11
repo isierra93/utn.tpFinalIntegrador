@@ -1,16 +1,18 @@
 package utn.trabajoPracticoIntegrador.dao;
 
+import utn.trabajoPracticoIntegrador.config.DatabaseConnection;
 import utn.trabajoPracticoIntegrador.entities.Paciente;
 
 import java.sql.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 public class PacienteDao implements GenericDao<Paciente>{
     @Override
     public void crear(Paciente entidad) {
         //Try with resources para preparar la conexion y cerrarla al terminar
-        try (Connection conn = utn.trabajoPracticoIntegrador.config.DatabaseConnection.getConnection()) {
+        try (Connection conn = DatabaseConnection.getConnection()) {
                 //Crear y ejecutar consulta SQL con PreparedStatement
                 String sql = "INSERT INTO paciente (eliminado, nombre, apellido, dni, fechaNacimiento) VALUES ( ?, ?, ?, ?, ? )";
                 //Try para preparar el insert SQL
@@ -39,10 +41,9 @@ public class PacienteDao implements GenericDao<Paciente>{
     @Override
     public Paciente leer(long id) {
         //Try with resources para preparar la conexion y cerrarla al terminar
-        try(Connection conn = utn.trabajoPracticoIntegrador.config.DatabaseConnection.getConnection()){
+        try(Connection conn = DatabaseConnection.getConnection()){
             //Crear y ejecutar consulta SQL con PreparedStatement
             String sql = "SELECT * FROM paciente WHERE id = ?";
-            //Try para preparar el insert SQL
             try (PreparedStatement pstmt = conn.prepareStatement(sql)){
                 pstmt.setLong(1, id);
                 try(ResultSet result = pstmt.executeQuery()){
@@ -52,6 +53,7 @@ public class PacienteDao implements GenericDao<Paciente>{
                             String apellido = result.getString("apellido");
                             String dni = result.getString("dni");
                             LocalDate fechaNacimiento = result.getDate("fechaNacimiento").toLocalDate();
+
                         return new Paciente(id, eliminado, nombre, apellido, dni, fechaNacimiento, null );
                     }else {
                         return null;
@@ -65,7 +67,29 @@ public class PacienteDao implements GenericDao<Paciente>{
 
     @Override
     public List<Paciente> leerTodos() {
-        return List.of();
+        List<Paciente> listaPacientes = new ArrayList<>();
+        //Try with resources para preparar la conexion y cerrarla al terminar
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            //Crear y ejecutar consulta SQL con PreparedStatement
+            String sql = "SELECT * FROM paciente";
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                try (ResultSet result = pstmt.executeQuery()){
+                    while (result.next()){
+                        Long id = result.getLong("id");
+                        boolean eliminado = result.getBoolean("eliminado");
+                        String nombre = result.getString("nombre");
+                        String apellido = result.getString("apellido");
+                        String dni = result.getString("dni");
+                        LocalDate fechaNacimiento = result.getDate("fechaNacimiento").toLocalDate();
+
+                        listaPacientes.add(new Paciente(id, eliminado, nombre, apellido, dni, fechaNacimiento, null));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al leer pacientes.", e);
+        }
+        return listaPacientes;
     }
 
     @Override
