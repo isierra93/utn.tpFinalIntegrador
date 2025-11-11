@@ -1,6 +1,7 @@
 package utn.trabajoPracticoIntegrador.dao;
 
 import utn.trabajoPracticoIntegrador.config.DatabaseConnection;
+import utn.trabajoPracticoIntegrador.entities.GrupoSanguineo;
 import utn.trabajoPracticoIntegrador.entities.HistoriaClinica;
 
 import java.sql.*;
@@ -36,7 +37,30 @@ public class HistoriaClinicaDao implements GenericDao<HistoriaClinica>{
 
     @Override
     public HistoriaClinica leer(long id) {
-        return null;
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            String sql = "SELECT * FROM historiaClinica WHERE id = ?";
+
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setLong(1, id);
+
+                try (ResultSet result = pstmt.executeQuery()) {
+                    if (result.next()){
+                        boolean eliminado = result.getBoolean("eliminado");
+                        String nroHistoria = result.getString("nroHistoria");
+                        GrupoSanguineo grupoSanguineo = GrupoSanguineo.buscarPorValor(result.getString("grupoSanguineo"));
+                        String antecedentes = result.getString("antecedentes");
+                        String medicacionActual = result.getString("medicacionActual");
+                        String observaciones = result.getString("observaciones");
+
+                        return new HistoriaClinica(id, eliminado, nroHistoria, grupoSanguineo, antecedentes, medicacionActual, observaciones);
+                    } else {
+                        return null;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al leer historia clinica.", e);
+        }
     }
 
     @Override

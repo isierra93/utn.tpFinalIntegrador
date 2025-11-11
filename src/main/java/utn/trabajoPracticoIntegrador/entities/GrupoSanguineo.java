@@ -20,4 +20,14 @@ public enum GrupoSanguineo {
     public String getGrupoSanguineo(){
         return valorSanguineo;
     }
+
+    public static GrupoSanguineo buscarPorValor(String valor) {
+
+        for(GrupoSanguineo grupoSanguineo : GrupoSanguineo.values()) {
+            if (grupoSanguineo.getGrupoSanguineo().equals(valor)  ){
+                return grupoSanguineo;
+            }
+        }
+        throw new IllegalArgumentException("Valor de grupo sanguíneo no válido: '" + valor + "'");
+    }
 }
