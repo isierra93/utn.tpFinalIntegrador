@@ -40,7 +40,7 @@ public class HistoriaClinicaDao implements GenericDao<HistoriaClinica>{
     @Override
     public HistoriaClinica leer(long id) {
         try (Connection conn = DatabaseConnection.getConnection()) {
-            String sql = "SELECT * FROM historiaclinica WHERE id = ?";
+            String sql = "SELECT * FROM historiaclinica WHERE id = ? AND eliminado = false";
 
             try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 pstmt.setLong(1, id);
@@ -69,7 +69,7 @@ public class HistoriaClinicaDao implements GenericDao<HistoriaClinica>{
     public List<HistoriaClinica> leerTodos() {
         List<HistoriaClinica> listaDeHistoriasClinicas = new ArrayList<>();
         try (Connection conn = DatabaseConnection.getConnection()) {
-            String sql = "SELECT * FROM historiaclinica";
+            String sql = "SELECT * FROM historiaclinica WHERE eliminado = false";
             try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 try (ResultSet result = pstmt.executeQuery()){
                     while (result.next()){

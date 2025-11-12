@@ -12,7 +12,7 @@ public interface GenericDao<T> {
 
     /**
      * Busca y devuelve una entidad por su ID.
-     * @return El objeto T encontrado, o null si no existe.
+     * @return El objeto T encontrado, o null si no existe o esta eliminada
      */
     T leer(long id);
 

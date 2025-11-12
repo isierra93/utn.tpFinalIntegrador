@@ -43,7 +43,7 @@ public class PacienteDao implements GenericDao<Paciente>{
         //Try with resources para preparar la conexion y cerrarla al terminar
         try(Connection conn = DatabaseConnection.getConnection()){
             //Crear y ejecutar consulta SQL con PreparedStatement
-            String sql = "SELECT * FROM paciente WHERE id = ?";
+            String sql = "SELECT * FROM paciente WHERE id = ? AND eliminado = false";
             try (PreparedStatement pstmt = conn.prepareStatement(sql)){
                 pstmt.setLong(1, id);
                 try(ResultSet result = pstmt.executeQuery()){
@@ -71,7 +71,7 @@ public class PacienteDao implements GenericDao<Paciente>{
         //Try with resources para preparar la conexion y cerrarla al terminar
         try (Connection conn = DatabaseConnection.getConnection()) {
             //Crear y ejecutar consulta SQL con PreparedStatement
-            String sql = "SELECT * FROM paciente";
+            String sql = "SELECT * FROM paciente WHERE eliminado = false";
             try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 try (ResultSet result = pstmt.executeQuery()){
                     while (result.next()){
