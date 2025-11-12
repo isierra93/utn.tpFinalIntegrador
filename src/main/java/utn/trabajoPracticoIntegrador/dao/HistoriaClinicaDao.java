@@ -22,6 +22,7 @@ public class HistoriaClinicaDao implements GenericDao<HistoriaClinica>{
                 pstmt.setString(4, entidad.getAntecedentes());
                 pstmt.setString(5, entidad.getMedicacionActual());
                 pstmt.setString(6, entidad.getObservaciones());
+
                 pstmt.executeUpdate();
 
                 try (ResultSet result = pstmt.getGeneratedKeys()) {
@@ -92,11 +93,42 @@ public class HistoriaClinicaDao implements GenericDao<HistoriaClinica>{
 
     @Override
     public void actualizar(HistoriaClinica entidad) {
+        try ( Connection conn = DatabaseConnection.getConnection() ) {
+            String sql = "UPDATE historiaclinica SET eliminado = ?," +
+                    " nroHistoria = ?, " +
+                    "grupoSanguineo = ?, " +
+                    "antecedentes = ?, " +
+                    "medicacionActual = ?, " +
+                    "observaciones = ? " +
+                    "WHERE id = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)){
+                pstmt.setBoolean(1, entidad.isEliminado());
+                pstmt.setString(2, entidad.getNroHistoria());
+                pstmt.setString(3,entidad.getGrupoSanguineo().getGrupoSanguineo());
+                pstmt.setString(4,entidad.getAntecedentes());
+                pstmt.setString(5,entidad.getMedicacionActual());
+                pstmt.setString(6,entidad.getObservaciones());
+                pstmt.setLong(7,entidad.getId());
 
+                pstmt.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al actualizar historia clinica.", e);
+        }
     }
 
     @Override
     public void eliminar(long id) {
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            String sql = "UPDATE historiaclinica SET eliminado = ? WHERE id = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)){
+                pstmt.setBoolean(1, true);
+                pstmt.setLong(2, id);
 
+                pstmt.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al eliminar historia clinica.", e);
+        }
     }
 }
