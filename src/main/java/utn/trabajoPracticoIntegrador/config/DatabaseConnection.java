@@ -7,7 +7,6 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 public class DatabaseConnection {
-    //Datos de la conexión, que se leeran de resources/db.properties
     private static Properties properties;
     private static String URL;
     private static String USER;

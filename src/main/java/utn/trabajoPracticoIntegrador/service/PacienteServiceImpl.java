@@ -19,99 +19,52 @@ import utn.trabajoPracticoIntegrador.entities.Paciente;
  */
 public class PacienteServiceImpl implements GenericService<Paciente> {
 
-    private PacienteDao pacienteDao;
-    private HistoriaClinicaDao historiaClinicaDao;
+    private final PacienteDao pacienteDao;
+    private final HistoriaClinicaServiceImpl historiaClinicaService;
+    private final HistoriaClinicaDao historiaClinicaDao;
 
-    public PacienteServiceImpl() {
-        this.pacienteDao = new PacienteDao();
-        this.historiaClinicaDao = new HistoriaClinicaDao();
-    }
-
-    /**
-     * Operación compuesta (A y B) con transacción y validación.
-     */
-    public void crearPacienteYSuHistoria(Paciente paciente, HistoriaClinica historia) throws SQLException {
-        
-        Connection conn = null;
-        try {
-            conn = DatabaseConnection.getConnection();
-            conn.setAutoCommit(false); 
-
-            // 3. Validaciones
-            if (paciente.getDni() == null || paciente.getDni().isBlank()) {
-                throw new RuntimeException("El DNI es obligatorio.");
-            }
-            if (historia.getNroHistoria() == null || historia.getNroHistoria().isBlank()) {
-                throw new RuntimeException("El Nro. de Historia es obligatorio.");
-            }
-
-            // Validación de duplicados (Regla 1-a-1)
-            if (pacienteDao.getByDni(paciente.getDni(), conn) != null) {
-                throw new RuntimeException("Error: Ya existe un paciente con el DNI " + paciente.getDni());
-            }
-            if (historiaClinicaDao.getByNroHistoria(historia.getNroHistoria(), conn) != null) {
-                throw new RuntimeException("Error: Ya existe una historia clínica con el Nro " + historia.getNroHistoria());
-            }
-
-            // 4. Ejecutar operaciones compuestas
-            // Primero creamos la Historia Clínica (B)
-            historiaClinicaDao.crear(historia, conn);
-            
-            // Le pasamos el objeto 'historia' completo, no el ID.
-            paciente.setHistoriaClinica(historia); 
-            // -----------------------------
-            // Finalmente creamos el Paciente (A)
-            pacienteDao.crear(paciente, conn);
-
-            // 5. commit() si todo salió bien
-            conn.commit();
-            
-        } catch (Exception e) {
-            // 6. rollback() si algo falló
-            if (conn != null) {
-                System.err.println("Error en la transacción. Haciendo rollback...");
-                conn.rollback();
-            }
-            // Relanzamos la excepción
-            throw new SQLException("Error al crear paciente con historia: " + e.getMessage(), e);
-            
-        } finally {
-            // 7. Restablecer autoCommit(true) y cerrar recursos
-            if (conn != null) {
-                try {
-                    conn.setAutoCommit(true);
-                    conn.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
+    // Constructor para Inyección de Dependencias
+    public PacienteServiceImpl(PacienteDao pacienteDao, HistoriaClinicaServiceImpl historiaService, HistoriaClinicaDao historiaDao) {
+        if (pacienteDao == null || historiaService == null || historiaDao == null) {
+            throw new IllegalArgumentException("Las dependencias no pueden ser null");
         }
+        this.pacienteDao = pacienteDao;
+        this.historiaClinicaService = historiaService;
+        this.historiaClinicaDao = historiaDao;
+    }
+    
+    public HistoriaClinicaServiceImpl getHistoriaClinicaService() {
+        return this.historiaClinicaService;
     }
 
     @Override
-    public void insertar(Paciente paciente) throws SQLException {
+    public void insertar(Paciente paciente) throws Exception {
+        validatePaciente(paciente);
+        
+        HistoriaClinica historia = paciente.getHistoriaClinica();
+        if (historia == null) {
+            throw new IllegalArgumentException("El paciente debe tener una historia clinica para ser insertado");
+        }
+        
         Connection conn = null;
         try {
             conn = DatabaseConnection.getConnection();
             conn.setAutoCommit(false);
 
-            // Validación: No se puede insertar un paciente sin historia
-            // (Esta es una regla de negocio de ejemplo, puedes quitarla si no aplica)
-            if (paciente.getHistoriaClinica() == null) {
-                 throw new RuntimeException("No se puede crear un paciente sin una Historia Clínica asociada.");
+            // Validación de unicidad dentro de la transaccion
+            validateDniUnique(paciente.getDni(), null, conn);
+            if (historiaClinicaDao.getByNroHistoria(historia.getNroHistoria(), conn)!= null) {
+                throw new IllegalArgumentException("Error: Ya existe una historia clínica con el Nro " + historia.getNroHistoria());
             }
-            
-            // Validación DNI
-            if (pacienteDao.getByDni(paciente.getDni(), conn) != null) {
-                throw new RuntimeException("Error: Ya existe un paciente con el DNI " + paciente.getDni());
-            }
-
+            //Creamos La hisotira clinica
+            historiaClinicaDao.crear(historia,conn);
+            //Creamos el paciente
             pacienteDao.crear(paciente, conn); 
 
             conn.commit();
         } catch (Exception e) {
             if (conn != null) conn.rollback();
-            throw new SQLException("Error al insertar paciente: " + e.getMessage(), e);
+            throw new SQLException("Error al insertar paciente con Historia: " + e.getMessage(), e);
         } finally {
             if (conn != null) {
                 conn.setAutoCommit(true);
@@ -122,14 +75,21 @@ public class PacienteServiceImpl implements GenericService<Paciente> {
     
     @Override
     public void actualizar(Paciente paciente) throws SQLException {
+        validatePaciente(paciente);
+        if (paciente.getId() == null || paciente.getId()<=0) {
+            throw new IllegalArgumentException("El id debe ser mayor a 0 para actualizar");
+        }
+        
         Connection conn = null;
         try {
             conn = DatabaseConnection.getConnection();
             conn.setAutoCommit(false);
 
-            // aca faltan validaciones antes de actualizar
-
-
+            validateDniUnique(paciente.getDni(),paciente.getId(), conn);
+            
+            if (paciente.getHistoriaClinica() != null) {
+                historiaClinicaDao.actualizar(paciente.getHistoriaClinica(), conn);
+            }
             pacienteDao.actualizar(paciente, conn);
 
             conn.commit();
@@ -138,50 +98,96 @@ public class PacienteServiceImpl implements GenericService<Paciente> {
             throw new SQLException("Error al actualizar paciente", e);
         } finally {
             if (conn != null) {
-                conn.setAutoCommit(true);
-                conn.close();
+                try { conn.setAutoCommit(true); conn.close(); } catch (SQLException e) { e.printStackTrace(); }
             }
         }
     }
 
     @Override
-    public void eliminar(long id) throws SQLException {
+    public void eliminar(long id) throws Exception {
+        if (id<=0) {
+            throw new IllegalArgumentException("El ID debe ser mayor a 0");
+        }
         Connection conn = null;
         try {
             conn = DatabaseConnection.getConnection();
             conn.setAutoCommit(false);
-            
-            // aca se pueden hacer validaciones (ej. no borrar si tiene deudas, etc.)
-
             pacienteDao.eliminar(id, conn);
-
             conn.commit();
         } catch (Exception e) {
             if (conn != null) conn.rollback();
             throw new SQLException("Error al eliminar paciente", e);
         } finally {
             if (conn != null) {
-                conn.setAutoCommit(true);
-                conn.close();
+                try { conn.setAutoCommit(true); conn.close(); } catch (SQLException e) { e.printStackTrace(); }
             }
         }
     }
-    
+    public void eliminarHistorialDePaciente (long pacienteId,long historiaId) throws Exception{
+        if (pacienteId<= 0 || historiaId <= 0) {
+            throw new IllegalArgumentException("Los ID deben ser mayor a 0");
+        }
+        Connection conn = null;
+        try {
+            conn = DatabaseConnection.getConnection();
+            conn.setAutoCommit(false);
+
+            Paciente paciente = pacienteDao.leer(pacienteId); 
+            if (paciente == null) {
+                throw new IllegalArgumentException("Paciente no encontrado con ID: " + pacienteId);
+            }
+            if (paciente.getHistoriaClinica() == null || paciente.getHistoriaClinica().getId() != historiaId) {
+                throw new IllegalArgumentException("La historia clínica no pertenece a este paciente");
+            }
+            // 1. Desasociar (actualizamos FK a NULL)
+            paciente.setHistoriaClinica(null);
+            pacienteDao.actualizar(paciente, conn);
+            // 2. Eliminar Historia
+            historiaClinicaDao.eliminar(historiaId, conn);
+            conn.commit();
+        } catch (Exception e) {
+            if (conn != null) conn.rollback();
+            throw new Exception("Error en eliminación segura de Historia: " + e.getMessage(), e);
+        } finally {
+            if (conn != null) {
+                try { conn.setAutoCommit(true); conn.close(); } catch (SQLException e) { e.printStackTrace(); }
+            }
+        }
+    }
     @Override
     public Paciente getById(long id) throws SQLException {
-        // Las lecturas no necesitan transacción (generalmente)
-        return pacienteDao.leer(id); 
+        if (id <= 0) {
+            throw new IllegalArgumentException("El ID debe ser > 0");
+        }
+        return pacienteDao.leer(id);
     }
     
     @Override
-    public List<Paciente> getAll() throws SQLException {
+    public List<Paciente> getAll() throws Exception {
         return pacienteDao.leerTodos();
     }
-    public Paciente getByDni(String dni) throws SQLException {
-        // Llama al método simple del DAO (que abre y cierra su propia conexión)
-        // o, mejor, reutiliza el que ya tenías para validación
-        try (Connection conn = DatabaseConnection.getConnection()) {
-            return pacienteDao.getByDni(dni, conn);
+    
+    public Paciente getByDni(String dni) throws Exception {
+        if (dni == null || dni.trim().isEmpty()) {
+            throw new IllegalArgumentException("El DNI no puede estar vacío");
+        }
+        return pacienteDao.getByDni(dni); 
+    }
+    
+    private void validatePaciente(Paciente paciente) {
+        if (paciente == null) { /* ... */ }
+        if (paciente.getNombre() == null || paciente.getNombre().trim().isEmpty()) { /* ... */ }
+        if (paciente.getApellido() == null || paciente.getApellido().trim().isEmpty()) { /* ... */ }
+        if (paciente.getDni() == null || paciente.getDni().trim().isEmpty()) { /* ... */ }
+    }
+
+    private void validateDniUnique(String dni, Long pacienteId, Connection conn) throws Exception { 
+        Paciente existente = pacienteDao.getByDni(dni, conn); 
+        if (existente != null) {
+            // Chequeo de IDs con Long
+            if (pacienteId == null || !existente.getId().equals(pacienteId)) { 
+                throw new IllegalArgumentException("Ya existe un paciente con el DNI: " + dni);
+            }
         }
     }
 }

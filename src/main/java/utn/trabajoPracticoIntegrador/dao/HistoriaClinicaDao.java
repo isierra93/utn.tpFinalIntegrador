@@ -38,12 +38,6 @@ public class HistoriaClinicaDao implements GenericDao<HistoriaClinica> {
         }
     }
 
-    /**
-     * MÉTODO 2: PARA EL SERVICIO (Transaccional)
-     * Este es el método que usará tu PacienteService.
-     * Recibe la conexión, NO la cierra y propaga la SQLException.
-     * ¡¡Crucial: Obtiene el ID generado y lo setea en el objeto 'entidad'!!
-     */
     public void crear(HistoriaClinica entidad, Connection conn) throws SQLException {
         String sql = "INSERT INTO historiaclinica (eliminado, nroHistoria, grupoSanguineo, antecedentes, medicacionActual, observaciones) " +
                      "VALUES (?, ?, ?, ?, ?, ?)";
@@ -61,8 +55,6 @@ public class HistoriaClinicaDao implements GenericDao<HistoriaClinica> {
             pstmt.setString(6, entidad.getObservaciones());
             
             pstmt.executeUpdate();
-
-            // --- ¡¡ESTA PARTE ES CLAVE PARA TU SERVICIO!! ---
             // Obtenemos el ID que generó la DB
             try (ResultSet rs = pstmt.getGeneratedKeys()) {
                 if (rs.next()) {
@@ -172,16 +164,12 @@ public class HistoriaClinicaDao implements GenericDao<HistoriaClinica> {
         }
     }
 
-    /**
-     * Método helper privado para mapear un ResultSet a un objeto HistoriaClinica
-     * y evitar repetir código.
-     */
     private HistoriaClinica mapResultSetToHistoria(ResultSet rs) throws SQLException {
         Long id = rs.getLong("id");
         boolean eliminado = rs.getBoolean("eliminado");
         String nroHistoria = rs.getString("nroHistoria");
         
-        // --- Conversión de String a Enum ---
+        // --- Conversión de String a Enum
         GrupoSanguineo gs = GrupoSanguineo.fromValue(rs.getString("grupoSanguineo"));
         
         String antecedentes = rs.getString("antecedentes");

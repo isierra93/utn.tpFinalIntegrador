@@ -13,13 +13,13 @@ import java.util.List;
  */
 public interface GenericService<T> {
 
-    void insertar(T entity) throws SQLException;
+    void insertar(T entity) throws Exception;
 
-    void actualizar(T entity) throws SQLException;
+    void actualizar(T entity) throws Exception;
 
-    void eliminar(long id) throws SQLException;
+    void eliminar(long id) throws Exception;
 
-    T getById(long id) throws SQLException;
+    T getById(long id) throws Exception;
 
-    List<T> getAll() throws SQLException;
+    List<T> getAll() throws Exception;
 }

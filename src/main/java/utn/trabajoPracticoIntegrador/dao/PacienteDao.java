@@ -175,7 +175,24 @@ public class PacienteDao implements GenericDao<Paciente> {
             }
         }
     }
-
+    /**
+     * MÉTODO SIMPLE: Busca por DNI (para lecturas no transaccionales)
+     * Este método abre y cierra su propia conexión.
+     * Es llamado por el Servicio cuando no se necesita una transacción.
+     */
+    public Paciente getByDni(String dni) throws Exception {
+        // 1. Abre su propia conexión
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            
+            // 2. Llama al método transaccional que ya existía
+            return getByDni(dni, conn); 
+            
+        } catch (SQLException e) {
+            // 3. Maneja la excepción
+            throw new Exception("Error al buscar paciente por DNI: " + e.getMessage(), e);
+        }
+    }
+    
     // --- MÉTODO HELPER
     private Paciente mapResultSetToPaciente(ResultSet result) throws SQLException {
         // 1. Construir la HistoriaClinica (si existe)

@@ -2,13 +2,13 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package utn.trabajoPracticoIntegrador.service;
+package utn.trabajoPracticoIntegrador;
+
 import java.util.Scanner;
-import utn.trabajoPracticoIntegrador.MenuDisplay;
-import utn.trabajoPracticoIntegrador.MenuHandler;
 import utn.trabajoPracticoIntegrador.dao.HistoriaClinicaDao;
 import utn.trabajoPracticoIntegrador.dao.PacienteDao;
-
+import utn.trabajoPracticoIntegrador.service.HistoriaClinicaServiceImpl;
+import utn.trabajoPracticoIntegrador.service.PacienteServiceImpl;
 
 /**
  *
@@ -17,7 +17,7 @@ import utn.trabajoPracticoIntegrador.dao.PacienteDao;
 public class AppMenu {
 
     private final Scanner scanner;
-    private final MenuHandler menuHandler; 
+    private final MenuHandler menuHandler; // El que hace el trabajo
     private boolean running;
 
     /**
@@ -30,6 +30,7 @@ public class AppMenu {
         this.menuHandler = createMenuHandler();
         this.running = true;
     }
+
 
     public void run() {
         while (running) {
@@ -44,9 +45,6 @@ public class AppMenu {
         scanner.close(); 
     }
 
-    /**
-     * Procesa la opción y delega a MenuHandler.
-     */
     private void processOption(int opcion) {
         switch (opcion) {
             case 1 -> menuHandler.crearPacienteConHistoria();
@@ -65,6 +63,9 @@ public class AppMenu {
         }
     }
 
+    /**
+     * Factory method que crea la cadena de dependencias (DI).
+     */
     private MenuHandler createMenuHandler() {
         // 1. DAOs (Capa más baja)
         HistoriaClinicaDao historiaDao = new HistoriaClinicaDao();
