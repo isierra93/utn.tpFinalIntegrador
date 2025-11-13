@@ -6,7 +6,6 @@ import utn.trabajoPracticoIntegrador.entities.HistoriaClinica;
 import utn.trabajoPracticoIntegrador.entities.Paciente;
 
 import java.sql.*;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +16,7 @@ public class PacienteDao implements GenericDao<Paciente> {
         Connection conn = null;
         try {
             conn = DatabaseConnection.getConnection();
-            crear(entidad, conn); 
+            crear(entidad, conn);
         } catch (SQLException e) {
             throw new RuntimeException("Error al crear paciente.", e);
         } finally {
@@ -47,7 +46,7 @@ public class PacienteDao implements GenericDao<Paciente> {
             pstmt.executeUpdate();
             try (ResultSet result = pstmt.getGeneratedKeys()) {
                 if (result.next()) {
-                    entidad.setId(result.getLong(1)); 
+                    entidad.setId(result.getLong(1));
                 }
             }
         }
@@ -56,11 +55,11 @@ public class PacienteDao implements GenericDao<Paciente> {
     @Override
     public Paciente leer(long id) {
         String sql = "SELECT " +
-            "p.id as p_id, p.eliminado as p_eliminado, p.nombre, p.apellido, p.dni, p.fechaNacimiento, " +
-            "h.id as h_id, h.eliminado as h_eliminado, h.nroHistoria, h.grupoSanguineo, h.antecedentes, h.medicacionActual, h.observaciones " +
-            "FROM paciente p " +
-            "LEFT JOIN historiaclinica h ON p.historia_clinica_id = h.id " +
-            "WHERE p.id = ? AND p.eliminado = false";
+                "p.id as p_id, p.eliminado as p_eliminado, p.nombre, p.apellido, p.dni, p.fechaNacimiento, " +
+                "h.id as h_id, h.eliminado as h_eliminado, h.nroHistoria, h.grupoSanguineo, h.antecedentes, h.medicacionActual, h.observaciones " +
+                "FROM paciente p " +
+                "LEFT JOIN historiaclinica h ON p.historia_clinica_id = h.id " +
+                "WHERE p.id = ? AND p.eliminado = false";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setLong(1, id);
@@ -80,18 +79,18 @@ public class PacienteDao implements GenericDao<Paciente> {
     @Override
     public List<Paciente> leerTodos() {
         String sql = "SELECT " +
-            "p.id as p_id, p.eliminado as p_eliminado, p.nombre, p.apellido, p.dni, p.fechaNacimiento, " +
-            "h.id as h_id, h.eliminado as h_eliminado, h.nroHistoria, h.grupoSanguineo, h.antecedentes, h.medicacionActual, h.observaciones " +
-            "FROM paciente p " +
-            "LEFT JOIN historiaclinica h ON p.historia_clinica_id = h.id " +
-            "WHERE p.eliminado = false";
-        
+                "p.id as p_id, p.eliminado as p_eliminado, p.nombre, p.apellido, p.dni, p.fechaNacimiento, " +
+                "h.id as h_id, h.eliminado as h_eliminado, h.nroHistoria, h.grupoSanguineo, h.antecedentes, h.medicacionActual, h.observaciones " +
+                "FROM paciente p " +
+                "LEFT JOIN historiaclinica h ON p.historia_clinica_id = h.id " +
+                "WHERE p.eliminado = false";
+
         List<Paciente> pacientes = new ArrayList<>();
-        
+
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet result = pstmt.executeQuery()) {
-            
+
             while (result.next()) {
                 pacientes.add(mapResultSetToPaciente(result));
             }
@@ -117,7 +116,7 @@ public class PacienteDao implements GenericDao<Paciente> {
 
     public void actualizar(Paciente entidad, Connection conn) throws SQLException {
         String sql = "UPDATE paciente SET nombre = ?, apellido = ?, dni = ?, fechaNacimiento = ?, " +
-                     "historia_clinica_id = ?, eliminado = ? WHERE id = ?";
+                "historia_clinica_id = ?, eliminado = ? WHERE id = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, entidad.getNombre());
             pstmt.setString(2, entidad.getApellido());
@@ -158,11 +157,11 @@ public class PacienteDao implements GenericDao<Paciente> {
     // --- MÉTODO PARA VALIDACIÓN
     public Paciente getByDni(String dni, Connection conn) throws SQLException {
         String sql = "SELECT " +
-            "p.id as p_id, p.eliminado as p_eliminado, p.nombre, p.apellido, p.dni, p.fechaNacimiento, " +
-            "h.id as h_id, h.eliminado as h_eliminado, h.nroHistoria, h.grupoSanguineo, h.antecedentes, h.medicacionActual, h.observaciones " +
-            "FROM paciente p " +
-            "LEFT JOIN historiaclinica h ON p.historia_clinica_id = h.id " +
-            "WHERE p.dni = ? AND p.eliminado = false";
+                "p.id as p_id, p.eliminado as p_eliminado, p.nombre, p.apellido, p.dni, p.fechaNacimiento, " +
+                "h.id as h_id, h.eliminado as h_eliminado, h.nroHistoria, h.grupoSanguineo, h.antecedentes, h.medicacionActual, h.observaciones " +
+                "FROM paciente p " +
+                "LEFT JOIN historiaclinica h ON p.historia_clinica_id = h.id " +
+                "WHERE p.dni = ? AND p.eliminado = false";
 
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, dni);
@@ -183,16 +182,16 @@ public class PacienteDao implements GenericDao<Paciente> {
     public Paciente getByDni(String dni) throws Exception {
         // 1. Abre su propia conexión
         try (Connection conn = DatabaseConnection.getConnection()) {
-            
+
             // 2. Llama al método transaccional que ya existía
-            return getByDni(dni, conn); 
-            
+            return getByDni(dni, conn);
+
         } catch (SQLException e) {
             // 3. Maneja la excepción
             throw new Exception("Error al buscar paciente por DNI: " + e.getMessage(), e);
         }
     }
-    
+
     // --- MÉTODO HELPER
     private Paciente mapResultSetToPaciente(ResultSet result) throws SQLException {
         // 1. Construir la HistoriaClinica (si existe)
@@ -200,24 +199,24 @@ public class PacienteDao implements GenericDao<Paciente> {
         long historiaId = result.getLong("h_id");
         if (!result.wasNull()) {
             hc = new HistoriaClinica(
-                historiaId,
-                result.getBoolean("h_eliminado"),
-                result.getString("nroHistoria"),
-                GrupoSanguineo.fromValue(result.getString("grupoSanguineo")), // Conversión de String a Enum,
-                result.getString("antecedentes"),
-                result.getString("medicacionActual"),
-                result.getString("observaciones")
+                    historiaId,
+                    result.getBoolean("h_eliminado"),
+                    result.getString("nroHistoria"),
+                    GrupoSanguineo.fromValue(result.getString("grupoSanguineo")), // Conversión de String a Enum,
+                    result.getString("antecedentes"),
+                    result.getString("medicacionActual"),
+                    result.getString("observaciones")
             );
         }
         // 2. Construir el Paciente
         return new Paciente(
-            result.getLong("p_id"),
-            result.getBoolean("p_eliminado"),
-            result.getString("nombre"),
-            result.getString("apellido"),
-            result.getString("dni"),
-            result.getDate("fechaNacimiento").toLocalDate(),
-            hc
+                result.getLong("p_id"),
+                result.getBoolean("p_eliminado"),
+                result.getString("nombre"),
+                result.getString("apellido"),
+                result.getString("dni"),
+                result.getDate("fechaNacimiento").toLocalDate(),
+                hc
         );
     }
 }

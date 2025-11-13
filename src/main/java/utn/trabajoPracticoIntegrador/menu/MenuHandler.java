@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package utn.trabajoPracticoIntegrador;
+package utn.trabajoPracticoIntegrador.menu;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -11,8 +11,8 @@ import java.util.Scanner;
 import utn.trabajoPracticoIntegrador.entities.GrupoSanguineo;
 import utn.trabajoPracticoIntegrador.entities.HistoriaClinica;
 import utn.trabajoPracticoIntegrador.entities.Paciente;
-import utn.trabajoPracticoIntegrador.service.HistoriaClinicaServiceImpl;
-import utn.trabajoPracticoIntegrador.service.PacienteServiceImpl;
+import utn.trabajoPracticoIntegrador.service.HistoriaClinicaService;
+import utn.trabajoPracticoIntegrador.service.PacienteService;
 
 /**
  *
@@ -21,13 +21,13 @@ import utn.trabajoPracticoIntegrador.service.PacienteServiceImpl;
 public class MenuHandler {
 
     private final Scanner scanner;
-    private final PacienteServiceImpl pacienteService;
-    private final HistoriaClinicaServiceImpl historiaClinicaService;
+    private final PacienteService pacienteService;
+    private final HistoriaClinicaService historiaClinicaService;
 
     /**
      * Constructor con inyección de dependencias.
      */
-    public MenuHandler(Scanner scanner, PacienteServiceImpl pacienteService, HistoriaClinicaServiceImpl historiaClinicaService) {
+    public MenuHandler(Scanner scanner, PacienteService pacienteService, HistoriaClinicaService historiaClinicaService) {
         if (scanner == null || pacienteService == null || historiaClinicaService == null) {
             throw new IllegalArgumentException("Las dependencias no pueden ser null");
         }
@@ -149,7 +149,7 @@ public class MenuHandler {
     }
     
     /**
-     * Opción 5: Actualizar Paciente (¡NUEVO!)
+     * Opción 5: Actualizar Paciente
      */
     public void actualizarPaciente() {
         System.out.println("\n--- Actualizar Paciente ---");
@@ -193,7 +193,7 @@ public class MenuHandler {
             
             pacienteService.actualizar(p);
             System.out.println("¡ÉXITO! Paciente actualizado correctamente.");
-
+            actualizarHistoriaClinica(p.getHistoriaClinica().getId());
         } catch (NumberFormatException e) {
             System.err.println("Error: El ID debe ser un número.");
         } catch (DateTimeParseException e) {
@@ -223,6 +223,7 @@ public class MenuHandler {
             
             if (confirmacion.equalsIgnoreCase("S")) {
                 pacienteService.eliminar(id);
+                historiaClinicaService.eliminar(p.getHistoriaClinica().getId());
                 System.out.println("¡ÉXITO! Paciente eliminado correctamente.");
             } else {
                 System.out.println("Operación cancelada.");
@@ -273,4 +274,67 @@ public class MenuHandler {
             System.err.println("Error de Base de Datos: " + e.getMessage());
         }
     }
+
+    /**
+     * Opción 8: Actualizar Historia Clinica
+     */
+
+    public void actualizarHistoriaClinica(Long id) {
+        System.out.println("\n--- Actualizar Historia Clinica ---");
+        try {
+
+            HistoriaClinica historiaClinica = historiaClinicaService.getById(id);
+
+            if (historiaClinica == null) {
+                System.err.println("No se encontró ningúna historia clinica con el ID: " + id);
+                return;
+            }
+
+            System.out.println("Datos actuales: " + historiaClinica);
+            System.out.println("Ingrese los nuevos datos (deje en blanco para mantener el valor actual):");
+
+            // Lógica "Enter para mantener"
+            System.out.print("Nuevo Numero Historia (" + historiaClinica.getNroHistoria() + "): ");
+            String nroHistoria = scanner.nextLine().trim();
+            if (!nroHistoria.isEmpty()) {
+                historiaClinica.setNroHistoria(nroHistoria);
+            }
+
+            //Verificar si esto anda
+            System.out.print("Nuevo Grupo Sanguineo (" + historiaClinica.getGrupoSanguineo() + "): ");
+            String grupoSanguineo = scanner.nextLine().trim();
+            if (!grupoSanguineo.isEmpty()) {
+                GrupoSanguineo gs = GrupoSanguineo.fromValue(grupoSanguineo);
+                historiaClinica.setGrupoSanguineo(gs);
+            }
+
+            System.out.print("Nuevo antecedentes (" + historiaClinica.getAntecedentes() + "): ");
+            String antecedentes = scanner.nextLine().trim().toUpperCase();
+            if (!antecedentes.isEmpty()) {
+                historiaClinica.setAntecedentes(antecedentes);
+            }
+
+            System.out.print("Nueva Medicacion: (" + historiaClinica.getMedicacionActual() + "): ");
+            String medicacion = scanner.nextLine().trim();
+            if (!medicacion.isEmpty()) {
+                historiaClinica.setMedicacionActual(medicacion);
+            }
+
+            System.out.print("Nuevas observaciones: (" + historiaClinica.getObservaciones() + "): ");
+            String obs = scanner.nextLine().trim();
+            if (!obs.isEmpty()) {
+                historiaClinica.setObservaciones(obs);
+            }
+
+            historiaClinicaService.actualizar(historiaClinica);
+            System.out.println("¡ÉXITO! Historia Clinica actualizada correctamente.");
+
+        } catch (NumberFormatException e) {
+            System.err.println("Error: El ID debe ser un número.");
+        }
+        catch (Exception e) { // Captura errores de Service y DB
+            System.err.println("Error al actualizar historia clinica: " + e.getMessage());
+        }
+    }
+
 }

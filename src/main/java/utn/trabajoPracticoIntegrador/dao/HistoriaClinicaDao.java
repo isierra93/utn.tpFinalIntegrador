@@ -1,4 +1,3 @@
-
 package utn.trabajoPracticoIntegrador.dao;
 
 import java.sql.Connection;
@@ -12,10 +11,6 @@ import utn.trabajoPracticoIntegrador.config.DatabaseConnection;
 import utn.trabajoPracticoIntegrador.entities.GrupoSanguineo;
 import utn.trabajoPracticoIntegrador.entities.HistoriaClinica;
 
-/**
- *
- * @author Cristian
- */
 public class HistoriaClinicaDao implements GenericDao<HistoriaClinica> {
 
     // --- MÉTODO 1: Para la interfaz (operación simple) ---
@@ -40,26 +35,26 @@ public class HistoriaClinicaDao implements GenericDao<HistoriaClinica> {
 
     public void crear(HistoriaClinica entidad, Connection conn) throws SQLException {
         String sql = "INSERT INTO historiaclinica (eliminado, nroHistoria, grupoSanguineo, antecedentes, medicacionActual, observaciones) " +
-                     "VALUES (?, ?, ?, ?, ?, ?)";
-        
+                "VALUES (?, ?, ?, ?, ?, ?)";
+
         try (PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            
+
             pstmt.setBoolean(1, false);
             pstmt.setString(2, entidad.getNroHistoria());
-            
+
             // --- Conversión de Enum a String ---
             pstmt.setString(3, entidad.getGrupoSanguineo().getValorDb());
-            
+
             pstmt.setString(4, entidad.getAntecedentes());
             pstmt.setString(5, entidad.getMedicacionActual());
             pstmt.setString(6, entidad.getObservaciones());
-            
+
             pstmt.executeUpdate();
             // Obtenemos el ID que generó la DB
             try (ResultSet rs = pstmt.getGeneratedKeys()) {
                 if (rs.next()) {
                     // Seteamos el ID en el objeto que nos pasaron por parámetro
-                    entidad.setId(rs.getLong(1)); 
+                    entidad.setId(rs.getLong(1));
                 }
             }
         }
@@ -74,7 +69,7 @@ public class HistoriaClinicaDao implements GenericDao<HistoriaClinica> {
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
+
             pstmt.setLong(1, id);
 
             try (ResultSet rs = pstmt.executeQuery()) {
@@ -98,7 +93,7 @@ public class HistoriaClinicaDao implements GenericDao<HistoriaClinica> {
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
-            
+
             while (rs.next()) {
                 historias.add(mapResultSetToHistoria(rs));
             }
@@ -125,9 +120,9 @@ public class HistoriaClinicaDao implements GenericDao<HistoriaClinica> {
 
     public void actualizar(HistoriaClinica entidad, Connection conn) throws SQLException {
         String sql = "UPDATE historiaclinica SET nroHistoria = ?, grupoSanguineo = ?, " +
-                     "antecedentes = ?, medicacionActual = ?, observaciones = ?, eliminado = ? " +
-                     "WHERE id = ?";
-        
+                "antecedentes = ?, medicacionActual = ?, observaciones = ?, eliminado = ? " +
+                "WHERE id = ?";
+
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, entidad.getNroHistoria());
             pstmt.setString(2, entidad.getGrupoSanguineo().getValorDb()); // Enum a String
@@ -168,16 +163,17 @@ public class HistoriaClinicaDao implements GenericDao<HistoriaClinica> {
         Long id = rs.getLong("id");
         boolean eliminado = rs.getBoolean("eliminado");
         String nroHistoria = rs.getString("nroHistoria");
-        
+
         // --- Conversión de String a Enum
         GrupoSanguineo gs = GrupoSanguineo.fromValue(rs.getString("grupoSanguineo"));
-        
+
         String antecedentes = rs.getString("antecedentes");
         String medicacionActual = rs.getString("medicacionActual");
         String observaciones = rs.getString("observaciones");
 
         return new HistoriaClinica(id, eliminado, nroHistoria, gs, antecedentes, medicacionActual, observaciones);
     }
+
     public HistoriaClinica getByNroHistoria(String nroHistoria, Connection conn) throws SQLException {
         String sql = "SELECT * FROM historiaclinica WHERE nroHistoria = ? AND eliminado = false";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {

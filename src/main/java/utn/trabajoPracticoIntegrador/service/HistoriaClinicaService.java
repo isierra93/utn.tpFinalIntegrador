@@ -1,77 +1,128 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package utn.trabajoPracticoIntegrador.service;
-
-/**
- *
- * @author nidia
- */
-
-import utn.trabajoPracticoIntegrador.DAO.HistoriaClinicaDao;
-import utn.trabajoPracticoIntegrador.entities.HistoriaClinica;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Optional;
-
-import static utn.trabajoPracticoIntegrador.config.DatabaseConnection.getConnection;
+import utn.trabajoPracticoIntegrador.config.DatabaseConnection;
+import utn.trabajoPracticoIntegrador.dao.HistoriaClinicaDao;
+import utn.trabajoPracticoIntegrador.entities.HistoriaClinica;
 
 public class HistoriaClinicaService implements GenericService<HistoriaClinica> {
 
-    private HistoriaClinicaDao dao = new HistoriaClinicaDao();
+    private final HistoriaClinicaDao historiaClinicaDao;
 
+    public HistoriaClinicaService(HistoriaClinicaDao historiaClinicaDao) {
+        if (historiaClinicaDao == null) {
+            throw new IllegalArgumentException("HistoriaClinicaDao no puede ser null");
+        }
+        this.historiaClinicaDao = historiaClinicaDao;
+    }
+
+    /**
+     * Inserta una nueva HistoriaClinica con validación y transacción.
+     */
     @Override
-    public HistoriaClinica insertar(HistoriaClinica hc) throws SQLException {
-        try (Connection conn = getConnection()) {
-            conn.setAutoCommit(false);
-            HistoriaClinica creado = dao.crear(hc, conn);
+    public void insertar(HistoriaClinica historia) throws Exception {
+        validateHistoria(historia);
+        
+        Connection conn = null;
+        try {
+            conn = DatabaseConnection.getConnection();
+            conn.setAutoCommit(false); // Inicia transacción
+
+            if (historiaClinicaDao.getByNroHistoria(historia.getNroHistoria(), conn) != null) {
+                throw new IllegalArgumentException("Error: Ya existe una historia clínica con el Nro " + historia.getNroHistoria());
+            }
+
+            historiaClinicaDao.crear(historia, conn); 
             conn.commit();
-            return creado;
+            
         } catch (Exception e) {
-            throw new SQLException("Error al insertar historia clínica", e);
+            // 6. Rollback
+            if (conn != null) conn.rollback();
+            throw new Exception("Error al insertar HistoriaClinica: " + e.getMessage(), e);
+        } finally {
+            // 7. Restablecer y cerramos conexion
+            if (conn != null) {
+                try { 
+                    conn.setAutoCommit(true); 
+                    conn.close(); 
+                } catch (SQLException e) { 
+                    e.printStackTrace(); 
+                }
+            }
         }
     }
-
+    
     @Override
-    public HistoriaClinica actualizar(HistoriaClinica hc) throws SQLException {
-        try (Connection conn = getConnection()) {
+    public void actualizar(HistoriaClinica historia) throws Exception {
+        validateHistoria(historia);
+        if (historia.getId() == null || historia.getId() <= 0) { // Chequeo de Long
+            throw new IllegalArgumentException("El ID del domicilio debe ser mayor a 0 para actualizar");
+        }
+        Connection conn = null;
+        try {
+            conn = DatabaseConnection.getConnection();
             conn.setAutoCommit(false);
-            boolean actualizado = dao.actualizar(hc, conn);
-            if (!actualizado) throw new SQLException("No se pudo actualizar historia clínica");
+            historiaClinicaDao.actualizar(historia, conn); // Le pasamos la historia y conexión
             conn.commit();
-            return hc;
         } catch (Exception e) {
-            throw new SQLException("Error al actualizar historia clínica", e);
+            if (conn != null) conn.rollback();
+            throw new Exception("Error al actualizar HistoriaClinica", e);
+        } finally {
+            if (conn != null) {
+                try { conn.setAutoCommit(true); conn.close(); } catch (SQLException e) { e.printStackTrace(); }
+            }
         }
     }
 
     @Override
-    public boolean eliminar(Long id) throws SQLException {
-        try (Connection conn = getConnection()) {
+    public void eliminar(long id) throws Exception {
+        if (id <= 0) {
+            throw new IllegalArgumentException("El ID debe ser mayor a 0");
+        }
+        Connection conn = null;
+        try {
+            conn = DatabaseConnection.getConnection();
             conn.setAutoCommit(false);
-            boolean eliminado = dao.eliminar(id, conn);
-            if (!eliminado) throw new SQLException("No se pudo eliminar historia clínica");
+            historiaClinicaDao.eliminar(id, conn);
             conn.commit();
-            return eliminado;
         } catch (Exception e) {
-            throw new SQLException("Error al eliminar historia clínica", e);
+            if (conn != null) conn.rollback();
+            throw new Exception("Error al eliminar HistoriaClinica", e);
+        } finally {
+            if (conn != null) {
+                try { conn.setAutoCommit(true); conn.close(); } catch (SQLException e) { e.printStackTrace(); }
+            }
         }
     }
 
-    @Override
-    public Optional<HistoriaClinica> getById(Long id) throws SQLException {
-        try (Connection conn = getConnection()) {
-            return dao.leer(id, conn);
+    @Override   
+    public HistoriaClinica getById(long id) throws Exception {
+        // Las lecturas simples no necesitan transacción
+        if (id <= 0) {
+            throw new IllegalArgumentException("El ID debe ser mayor a 0");
         }
+        return historiaClinicaDao.leer(id);
     }
 
+    /**
+     * Obtiene todas las HistoriasClinicas tampoco necesita transacción
+     */
     @Override
     public List<HistoriaClinica> getAll() throws SQLException {
-        try (Connection conn = getConnection()) {
-            return dao.leerTodos(conn);
+        return historiaClinicaDao.leerTodos();
+    }
+    
+    private void validateHistoria(HistoriaClinica historia) {
+        if (historia == null) {
+            throw new IllegalArgumentException("La HistoriaClinica no puede ser null");
+        }
+        if (historia.getNroHistoria() == null || historia.getNroHistoria().trim().isEmpty()) {
+            throw new IllegalArgumentException("El Nro. de Historia no puede estar vacío");
+        }
+        if (historia.getGrupoSanguineo() == null) {
+            throw new IllegalArgumentException("El Grupo Sanguíneo no puede ser null");
         }
     }
 }

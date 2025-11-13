@@ -1,9 +1,6 @@
 package utn.trabajoPracticoIntegrador;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import utn.trabajoPracticoIntegrador.config.DatabaseConnection;
-import utn.trabajoPracticoIntegrador.service.AppMenu;
+import utn.trabajoPracticoIntegrador.menu.AppMenu;
 
 public class Main {
     public static void main(String[] args) {
@@ -11,3 +8,7 @@ public class Main {
         app.run();
     }
 }
+//Agregue llamado a historiaclinicaservice en menugandler - line 227
+//GenericDAO - actualizar y eliminar no se utiliza
+//Al cargar un paciente con dato null
+//Opcion para Modificar historia clinica

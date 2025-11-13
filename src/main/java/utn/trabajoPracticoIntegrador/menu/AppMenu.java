@@ -2,13 +2,14 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package utn.trabajoPracticoIntegrador;
-
+package utn.trabajoPracticoIntegrador.menu;
 import java.util.Scanner;
+
 import utn.trabajoPracticoIntegrador.dao.HistoriaClinicaDao;
 import utn.trabajoPracticoIntegrador.dao.PacienteDao;
-import utn.trabajoPracticoIntegrador.service.HistoriaClinicaServiceImpl;
-import utn.trabajoPracticoIntegrador.service.PacienteServiceImpl;
+import utn.trabajoPracticoIntegrador.service.HistoriaClinicaService;
+import utn.trabajoPracticoIntegrador.service.PacienteService;
+
 
 /**
  *
@@ -17,7 +18,7 @@ import utn.trabajoPracticoIntegrador.service.PacienteServiceImpl;
 public class AppMenu {
 
     private final Scanner scanner;
-    private final MenuHandler menuHandler; // El que hace el trabajo
+    private final MenuHandler menuHandler; 
     private boolean running;
 
     /**
@@ -30,7 +31,6 @@ public class AppMenu {
         this.menuHandler = createMenuHandler();
         this.running = true;
     }
-
 
     public void run() {
         while (running) {
@@ -45,6 +45,9 @@ public class AppMenu {
         scanner.close(); 
     }
 
+    /**
+     * Procesa la opción y delega a MenuHandler.
+     */
     private void processOption(int opcion) {
         switch (opcion) {
             case 1 -> menuHandler.crearPacienteConHistoria();
@@ -63,19 +66,16 @@ public class AppMenu {
         }
     }
 
-    /**
-     * Factory method que crea la cadena de dependencias (DI).
-     */
     private MenuHandler createMenuHandler() {
         // 1. DAOs (Capa más baja)
         HistoriaClinicaDao historiaDao = new HistoriaClinicaDao();
         PacienteDao pacienteDao = new PacienteDao();
         
         // 2. Services (Inyectamos los DAOs)
-        HistoriaClinicaServiceImpl historiaService = new HistoriaClinicaServiceImpl(historiaDao);
+        HistoriaClinicaService historiaService = new HistoriaClinicaService(historiaDao);
         
         // PacienteService necesita ambos DAOs y el otro Service
-        PacienteServiceImpl pacienteService = new PacienteServiceImpl(pacienteDao, historiaService, historiaDao);
+        PacienteService pacienteService = new PacienteService(pacienteDao, historiaService, historiaDao);
         
         // 3. Handler (Inyectamos Scanner y Services)
         return new MenuHandler(scanner, pacienteService, historiaService);

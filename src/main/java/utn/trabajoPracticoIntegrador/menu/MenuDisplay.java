@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package utn.trabajoPracticoIntegrador;
+package utn.trabajoPracticoIntegrador.menu;
 
 /**
  *
@@ -17,8 +17,8 @@ public class MenuDisplay {
         System.out.println("2. Ver Paciente por ID");
         System.out.println("3. Listar todos los Pacientes");
         System.out.println("4. Buscar Paciente por DNI");
-        System.out.println("5. Actualizar Paciente"); // La opción que faltaba
-        System.out.println("6. Eliminar Paciente (lógico)");
+        System.out.println("5. Actualizar Paciente e Historia Clinica");
+        System.out.println("6. Eliminar Paciente e Historia Clinica (lógico)");
         System.out.println("--- GESTIÓN DE HISTORIAS CLÍNICAS ---");
         System.out.println("7. Ver Historia Clínica por ID");
         System.out.println("8. Listar todas las Historias Clínicas");
