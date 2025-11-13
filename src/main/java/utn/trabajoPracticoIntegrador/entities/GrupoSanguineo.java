@@ -11,13 +11,27 @@ public enum GrupoSanguineo {
     O_NEGATIVO("O-")
     ;
 
-    private final String valorSanguineo;
+// 2. Campo para guardar el valor de la DB
+    private final String valorDb;
 
-    GrupoSanguineo(String s) {
-        this.valorSanguineo = s;
+    // 3. Constructor
+    GrupoSanguineo(String valorDb) {
+        this.valorDb = valorDb;
     }
 
-    public String getGrupoSanguineo(){
-        return valorSanguineo;
+    // 4. Getter para guardar en la DB (lo usará el DAO.crear)
+    public String getValorDb() {
+        return valorDb;
+    }
+
+    // 5. Método "inteligente" para buscar (¡Este reemplaza a valueOf!)
+    public static GrupoSanguineo fromValue(String texto) {
+        for (GrupoSanguineo gs : values()) {
+            if (gs.valorDb.equalsIgnoreCase(texto)) {
+                return gs;
+            }
+        }
+        // Si no lo encuentra, lanza una excepción (o devuelve null)
+        throw new IllegalArgumentException("No se encontró un GrupoSanguineo para el valor: " + texto);
     }
 }

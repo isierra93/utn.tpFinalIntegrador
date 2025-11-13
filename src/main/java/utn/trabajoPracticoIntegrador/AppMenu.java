@@ -1,0 +1,83 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package utn.trabajoPracticoIntegrador;
+
+import java.util.Scanner;
+import utn.trabajoPracticoIntegrador.dao.HistoriaClinicaDao;
+import utn.trabajoPracticoIntegrador.dao.PacienteDao;
+import utn.trabajoPracticoIntegrador.service.HistoriaClinicaServiceImpl;
+import utn.trabajoPracticoIntegrador.service.PacienteServiceImpl;
+
+/**
+ *
+ * @author Cristian
+ */
+public class AppMenu {
+
+    private final Scanner scanner;
+    private final MenuHandler menuHandler; // El que hace el trabajo
+    private boolean running;
+
+    /**
+     * Constructor que inicializa la aplicación.
+     * Implementa Inyección de Dependencias manual
+     */
+    public AppMenu() {
+        this.scanner = new Scanner(System.in);
+        // El "Factory Method" crea toda la cadena de dependencias
+        this.menuHandler = createMenuHandler();
+        this.running = true;
+    }
+
+
+    public void run() {
+        while (running) {
+            try {
+                MenuDisplay.mostrarMenuPrincipal(); // Muestra el menú
+                int opcion = Integer.parseInt(scanner.nextLine());
+                processOption(opcion); // Procesa la opción
+            } catch (NumberFormatException e) {
+                System.err.println("Entrada invalida. Por favor, ingrese un numero.");
+            }
+        }
+        scanner.close(); 
+    }
+
+    private void processOption(int opcion) {
+        switch (opcion) {
+            case 1 -> menuHandler.crearPacienteConHistoria();
+            case 2 -> menuHandler.verPacientePorId();
+            case 3 -> menuHandler.listarTodosLosPacientes();
+            case 4 -> menuHandler.buscarPacientePorDni();
+            case 5 -> menuHandler.actualizarPaciente(); // Nueva opción
+            case 6 -> menuHandler.eliminarPaciente();
+            case 7 -> menuHandler.verHistoriaPorId();
+            case 8 -> menuHandler.listarTodasLasHistorias();
+            case 0 -> { // 0 para Salir
+                System.out.println("Saliendo... ¡Hasta luego!");
+                running = false;
+            }
+            default -> System.err.println("Opcion no valida.");
+        }
+    }
+
+    /**
+     * Factory method que crea la cadena de dependencias (DI).
+     */
+    private MenuHandler createMenuHandler() {
+        // 1. DAOs (Capa más baja)
+        HistoriaClinicaDao historiaDao = new HistoriaClinicaDao();
+        PacienteDao pacienteDao = new PacienteDao();
+        
+        // 2. Services (Inyectamos los DAOs)
+        HistoriaClinicaServiceImpl historiaService = new HistoriaClinicaServiceImpl(historiaDao);
+        
+        // PacienteService necesita ambos DAOs y el otro Service
+        PacienteServiceImpl pacienteService = new PacienteServiceImpl(pacienteDao, historiaService, historiaDao);
+        
+        // 3. Handler (Inyectamos Scanner y Services)
+        return new MenuHandler(scanner, pacienteService, historiaService);
+    }
+}

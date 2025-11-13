@@ -59,14 +59,25 @@ public class HistoriaClinica extends BaseEntity{
         this.observaciones = observaciones;
     }
 
-    @Override
-    public String toString() {
-        return "HistoriaClinica{" +
-                "nroHistoria='" + nroHistoria + '\'' +
-                ", grupoSanguineo=" + grupoSanguineo +
-                ", antecedentes='" + antecedentes + '\'' +
-                ", medicacionActual='" + medicacionActual + '\'' +
-                ", observaciones='" + observaciones + '\'' +
-                "} " + super.toString();
-    }
+@Override
+public String toString() {
+    return String.format(
+        """
+        -----------------------------
+        HISTORIA CLÍNICA
+        -----------------------------
+        Número: %s
+        Grupo Sanguíneo: %s
+        Antecedentes: %s
+        Medicación Actual: %s
+        Observaciones: %s
+        -----------------------------
+        """,
+        nroHistoria,
+        grupoSanguineo,
+        antecedentes != null ? antecedentes : "No registrado",
+        medicacionActual != null ? medicacionActual : "No registrada",
+        observaciones != null ? observaciones : "No registradas"
+    );
+}
 }

@@ -61,14 +61,26 @@ public class Paciente extends BaseEntity{
         this.historiaClinica = historiaClinica;
     }
 
-    @Override
-    public String toString() {
-        return "Paciente{" +
-                "nombre='" + nombre + '\'' +
-                ", apellido='" + apellido + '\'' +
-                ", dni='" + dni + '\'' +
-                ", fechaNacimiento=" + fechaNacimiento +
-                ", historiaClinica=" + historiaClinica +
-                "} " + super.toString();
-    }
+@Override
+public String toString() {
+    return String.format(
+        """
+        --------------------------
+        PACIENTE
+        --------------------------
+        Nombre: %s %s
+        DNI: %s
+        Fecha Nacimiento: %s
+        Historia Clínica: %s
+        Grupo Sanguíneo: %s
+        --------------------------
+        """,
+        nombre,
+        apellido,
+        dni,
+        fechaNacimiento,
+        (historiaClinica != null) ? historiaClinica.getNroHistoria() : "No asignada",
+        (historiaClinica != null) ? historiaClinica.getGrupoSanguineo() : "No especificado"
+    );
+}
 }
