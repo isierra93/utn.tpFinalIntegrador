@@ -24,6 +24,7 @@ public class DatabaseConnection {
             URL = properties.getProperty("db.url");
             USER = properties.getProperty("db.user");
             PASSWORD = properties.getProperty("db.password");
+            
 
         } catch (Exception e) {
             throw new RuntimeException("Error: No se pudo cargar db.properties" , e);
