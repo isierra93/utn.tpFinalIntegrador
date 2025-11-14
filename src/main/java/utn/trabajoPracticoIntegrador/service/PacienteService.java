@@ -177,17 +177,26 @@ public class PacienteService implements GenericService<Paciente> {
     }
     
     private void validatePaciente(Paciente paciente) {
-        if (paciente == null) { /* ... */ }
-        if (paciente.getNombre() == null || paciente.getNombre().trim().isEmpty()) { /* ... */ }
-        if (paciente.getApellido() == null || paciente.getApellido().trim().isEmpty()) { /* ... */ }
-        if (paciente.getDni() == null || paciente.getDni().trim().isEmpty()) { /* ... */ }
+        //Validación de atributos del paciente
+        if (paciente == null) {
+            throw new IllegalArgumentException("Entidad paciente vacia.");
+        }
+        if (paciente.getNombre() == null || paciente.getNombre().trim().isEmpty()) {
+            throw new IllegalArgumentException("El nombre del paciente no puede estar vacio.");
+        }
+        if (paciente.getApellido() == null || paciente.getApellido().trim().isEmpty()) {
+            throw new IllegalArgumentException("El apellido del paciente no puede estar vacio.");
+        }
+        if (paciente.getDni() == null || paciente.getDni().trim().isEmpty()) {
+            throw new IllegalArgumentException("El DNI no puede estar vacio.");
+        }
     }
 
     private void validateDniUnique(String dni, Long pacienteId, Connection conn) throws Exception { 
         Paciente existente = pacienteDao.getByDni(dni, conn); 
         if (existente != null) {
-            // Chequeo de IDs con Long
-            if (pacienteId == null || !existente.getId().equals(pacienteId)) { 
+            // Chequeo de IDs con Long y a prueba de null
+            if (!java.util.Objects.equals(existente.getId(), pacienteId)) {
                 throw new IllegalArgumentException("Ya existe un paciente con el DNI: " + dni);
             }
         }
