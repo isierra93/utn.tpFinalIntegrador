@@ -34,22 +34,21 @@ USE db_integrador;
 CREATE TABLE db_integrador.historiaclinica (
  id BIGINT NOT NULL AUTO_INCREMENT,
  eliminado boolean DEFAULT FALSE,
- nroHistoria VARCHAR(60) NOT NULL,
+ nroHistoria VARCHAR(20) NOT NULL UNIQUE,
  grupoSanguineo VARCHAR(3) NOT NULL,
  antecedentes VARCHAR(100) NULL,
  medicacionActual VARCHAR(200) NULL,
  observaciones VARCHAR(200) NULL,
  PRIMARY KEY (id),
- UNIQUE (nroHistoria),
  CHECK (grupoSanguineo IN ('A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'))
 );
 
 CREATE TABLE db_integrador.paciente (
  id BIGINT NOT NULL AUTO_INCREMENT,
  eliminado boolean DEFAULT FALSE,
- nombre VARCHAR(60) NOT NULL,
- apellido VARCHAR(60) NOT NULL,
- dni VARCHAR(60) NOT NULL UNIQUE,
+ nombre VARCHAR(80) NOT NULL,
+ apellido VARCHAR(80) NOT NULL,
+ dni VARCHAR(15) NOT NULL UNIQUE,
  fechaNacimiento DATE NOT NULL,
  -- CAMPO AÑADIDO PARA LA RELACIÓN 1:1 --
  historia_clinica_id BIGINT NULL UNIQUE,
@@ -60,10 +59,61 @@ CREATE TABLE db_integrador.paciente (
  CONSTRAINT fk_paciente_hclinica
    FOREIGN KEY (historia_clinica_id)
    REFERENCES db_integrador.historiaclinica(id)
+   ON DELETE CASCADE
 );
 
 -- ---
--- 3. CREACIÓN DEL USUARIO Y PERMISOS
+-- 3. CREACIÓN DE TRIGGERS
+-- ---
+
+-- Cambiamos el delimitador estándar (;) para poder escribir el
+-- cuerpo del trigger, que usa (;) internamente.
+
+DROP TRIGGER IF EXISTS trg_paciente_check_insert;
+DROP TRIGGER IF EXISTS trg_paciente_check_update;
+
+DELIMITER $$
+
+-- Trigger para INSERCIONES (valida fecha Y campos vacíos)
+CREATE TRIGGER trg_paciente_check_insert
+BEFORE INSERT ON paciente
+FOR EACH ROW
+BEGIN
+  -- 1. Validación de fecha de nacimiento
+  IF NEW.fechaNacimiento > CURDATE() THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Error: La fecha de nacimiento no puede ser una fecha futura.';
+
+  -- 2. Validación de strings vacíos
+  -- Usamos TRIM() para que ' ' (un espacio) también cuente como vacío
+  ELSEIF TRIM(NEW.nombre) = '' OR TRIM(NEW.apellido) = '' OR TRIM(NEW.dni) = '' THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Error: El nombre, apellido y DNI no pueden estar vacíos.';
+  END IF;
+END$$
+
+-- Trigger para ACTUALIZACIONES (valida fecha Y campos vacíos)
+CREATE TRIGGER trg_paciente_check_update
+BEFORE UPDATE ON paciente
+FOR EACH ROW
+BEGIN
+  -- 1. Validación de fecha de nacimiento
+  IF NEW.fechaNacimiento > CURDATE() THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Error: La fecha de nacimiento no puede ser una fecha futura.';
+
+  -- 2. Validación de strings vacíos
+  ELSEIF TRIM(NEW.nombre) = '' OR TRIM(NEW.apellido) = '' OR TRIM(NEW.dni) = '' THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Error: El nombre, apellido y DNI no pueden estar vacíos.';
+  END IF;
+END$$
+
+-- Volvemos a poner el delimitador estándar
+DELIMITER ;
+
+-- ---
+-- 4. CREACIÓN DEL USUARIO Y PERMISOS
 -- ---
 
 -- Crear el usuario que solo se conectará localmente
@@ -79,73 +129,46 @@ ON db_integrador.* TO 'usuario_hospital'@'localhost';
 FLUSH PRIVILEGES;
 
 
--- (Opcional) Insertar un par de ejemplos
+-- Seleccionar la base de datos para trabajar en ella
+USE db_integrador;
 
 -- ---
--- HISTORIAS CLINICAS
+-- 5. INSERCIÓN DE DATOS DE PRUEBA
 -- ---
 
--- Historia Clínica 1
-
+-- Paciente 1: Juan Perez
+-- Primero creamos su historia clínica
 INSERT INTO db_integrador.historiaclinica
-(nroHistoria, grupoSanguineo, antecedentes, medicacionActual, observaciones)
+  (nroHistoria, grupoSanguineo, antecedentes, medicacionActual)
 VALUES
-('HC-1001', 'A+', 'Alergia al polen', 'Loratadina 10mg', 'Control estacional requerido');
+  ('HC1001', 'O+', 'Alergia al polen', 'Loratadina 10mg');
 
--- Historia Clínica 2
+-- Ahora creamos al paciente, vinculándolo con la historia clínica
+-- recién creada usando LAST_INSERT_ID()
+INSERT INTO db_integrador.paciente
+  (nombre, apellido, dni, fechaNacimiento, historia_clinica_id)
+VALUES
+  ('Juan', 'Perez', '30111222', '1985-04-12', LAST_INSERT_ID());
+
+
+-- Paciente 2: Maria Garcia
 INSERT INTO db_integrador.historiaclinica
-(nroHistoria, grupoSanguineo, antecedentes, medicacionActual, observaciones)
+  (nroHistoria, grupoSanguineo, observaciones)
 VALUES
-('HC-1002', 'O-', 'Hipertensión', 'Enalapril 20mg', 'Dieta baja en sodio');
+  ('HC1002', 'A-', 'Cirugía de apéndice en 2010');
 
--- Historia Clínica 3
+INSERT INTO db_integrador.paciente
+  (nombre, apellido, dni, fechaNacimiento, historia_clinica_id)
+VALUES
+  ('Maria', 'Garcia', '32333444', '1990-11-30', LAST_INSERT_ID());
+
+-- Paciente 3: Carlos Lopez (Ejemplo de campos nulos)
 INSERT INTO db_integrador.historiaclinica
-(nroHistoria, grupoSanguineo, antecedentes, medicacionActual, observaciones)
+  (nroHistoria, grupoSanguineo)
 VALUES
-('HC-1003', 'AB+', 'Asma leve', 'Salbutamol SOS', NULL);
+  ('HC1003', 'B+');
 
--- Historia Clínica 4
-INSERT INTO db_integrador.historiaclinica
-(nroHistoria, grupoSanguineo, antecedentes, medicacionActual, observaciones)
-VALUES
-('HC-1004', 'B-', 'Cirugía de apéndice (2015)', NULL, 'Paciente saludable');
-
--- Historia Clínica 5
-INSERT INTO db_integrador.historiaclinica
-(nroHistoria, grupoSanguineo, antecedentes, medicacionActual, observaciones)
-VALUES
-('HC-1005', 'O+', NULL, 'Complejo vitamínico', 'Chequeo general anual');
-
--- ---
--- PACIENTES
--- ---
-
--- Paciente 1 (vinculado a HC-1001, ID: 1)
 INSERT INTO db_integrador.paciente
-(nombre, apellido, dni, fechaNacimiento, historia_clinica_id)
+  (nombre, apellido, dni, fechaNacimiento, historia_clinica_id)
 VALUES
-('Carlos', 'Sánchez', '30123456', '1980-05-15', 1);
-
--- Paciente 2 (vinculado a HC-1002, ID: 2)
-INSERT INTO db_integrador.paciente
-(nombre, apellido, dni, fechaNacimiento, historia_clinica_id)
-VALUES
-('Ana', 'Gómez', '32987654', '1985-11-20', 2);
-
--- Paciente 3 (vinculado a HC-1003, ID: 3)
-INSERT INTO db_integrador.paciente
-(nombre, apellido, dni, fechaNacimiento, historia_clinica_id)
-VALUES
-('Juan', 'Pérez', '40111222', '1998-02-10', 3);
-
--- Paciente 4 (vinculado a HC-1004, ID: 4)
-INSERT INTO db_integrador.paciente
-(nombre, apellido, dni, fechaNacimiento, historia_clinica_id)
-VALUES
-('María', 'López', '35888999', '1990-07-30', 4);
-
--- Paciente 5 (vinculado a HC-1005, ID: 5)
-INSERT INTO db_integrador.paciente
-(nombre, apellido, dni, fechaNacimiento, historia_clinica_id)
-VALUES
-('Luis', 'Martínez', '28777333', '1975-12-01', 5);
+  ('Carlos', 'Lopez', '28555666', '1980-01-20', LAST_INSERT_ID());
