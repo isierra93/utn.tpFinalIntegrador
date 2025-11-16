@@ -109,7 +109,7 @@ Autores
 
 Este proyecto fue desarrollado en grupo por:
 
-- Facundo Achiria
+- Facundo Archiria
 - Nidia Samaniego
 - Ivan Sierra
 - Cristian Siles
