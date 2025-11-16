@@ -27,7 +27,13 @@ La persistencia de los datos se maneja directamente a través de JDBC conectánd
 * **Base de Datos:** MySQL
 * **Conectividad:** JDBC (Java Database Connectivity)
 
-## Prerrequisitos
+## Requisitos del Sistema
+
+| Componente        | Versión Requerida      |
+|-------------------|------------------------|
+| Java JDK          | 21 o superior          |
+| MySQL             | 8.4.0 o superior       |
+| Sistema Operativo | Windows, Linux o macOS |
 
 Antes de ejecutar el proyecto, necesitarás tener instalado lo siguiente:
 
@@ -48,6 +54,25 @@ cd utn.tpFinalIntegrador
 
 **2. Configurar y Probar la Conexión**
 
+Por defecto conecta a:
+- **Host**: localhost:3306
+- **Base de datos**: db_integrador
+- **Usuario**: usuario_hospital
+- **Contraseña**: abc123
+
+Para cambiar la configuración, usar el archivo dentro de la carpeta resources: db.properties
+
+```bash
+
+./src/main/resources/db.properties
+
+##Datos precargados, se aplican con el script.sql
+db.url=jdbc:mysql://127.0.0.1:3306/db_integrador
+db.user=usuario_hospital
+db.password=abc123
+
+```
+
 El proyecto incluye un script.sql para configurar la base de datos.
 
 Antes de ejecutar la aplicación, asegúrate de dos cosas:
@@ -62,11 +87,29 @@ Para facilitar esta verificación, puedes ejecutar el test TestConexion.java (ub
 
 Una vez que la conexión esté verificada (idealmente usando el TestConexion.java), puedes compilar y ejecutar el proyecto. Si estás usando un IDE, simplemente busca la clase principal (que contiene el método public static void main(String[] args)) y ejecútala.
 
+---
+
+## Resumen de Operaciones del Menú
+
+| Opción | Operación                           | Handler 
+|--------|-------------------------------------|---------|
+| 1 | Crear paciente                      | `crearPacienteConHistoria()` 
+| 2 | Buscar paciente por ID              | `verPacientePorId()` 
+| 3 | Listar todos los pacientes          | `listarTodosLosPacientes()` 
+| 4 | Buscar paciente por DNI             | `buscarPacientePorDni()` 
+| 5 | Actualizar paciente e historia      | `actualizarPaciente()` 
+| 6 | Eliminar paciente e historia        | `eliminarPaciente()`
+| 7 | Buscar historia clinica por ID      | `verHistoriaPorId()` 
+| 8 | Listar todas las historias clinicas | `listarTodasLasHistorias()`
+| 0 | Salir                               | Sets `running = false`
+
+---
+
 Autores
 
 Este proyecto fue desarrollado en grupo por:
 
-- Facundo Achira
+- Facundo Achiria
 - Nidia Samaniego
 - Ivan Sierra
 - Cristian Siles

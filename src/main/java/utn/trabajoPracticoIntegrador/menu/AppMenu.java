@@ -45,11 +45,11 @@ public class AppMenu {
             case 2 -> menuHandler.verPacientePorId();
             case 3 -> menuHandler.listarTodosLosPacientes();
             case 4 -> menuHandler.buscarPacientePorDni();
-            case 5 -> menuHandler.actualizarPaciente(); // Nueva opción
+            case 5 -> menuHandler.actualizarPaciente();
             case 6 -> menuHandler.eliminarPaciente();
             case 7 -> menuHandler.verHistoriaPorId();
             case 8 -> menuHandler.listarTodasLasHistorias();
-            case 0 -> { // 0 para Salir
+            case 0 -> {
                 System.out.println("Saliendo... ¡Hasta luego!");
                 running = false;
             }
