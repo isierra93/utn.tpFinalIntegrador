@@ -1,13 +1,5 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package utn.trabajoPracticoIntegrador.menu;
 
-/**
- *
- * @author Cristian
- */
 public class MenuDisplay {
     
     public static void mostrarMenuPrincipal() {
@@ -22,8 +14,7 @@ public class MenuDisplay {
         System.out.println("--- GESTIÓN DE HISTORIAS CLÍNICAS ---");
         System.out.println("7. Ver Historia Clínica por ID");
         System.out.println("8. Listar todas las Historias Clínicas");
-        // Aquí podrías agregar 9. Actualizar HC, 10. Eliminar HC
-        System.out.println("0. Salir"); // Usamos 0 para Salir
+        System.out.println("0. Salir");
         System.out.print("Seleccione una opción: ");
     }
 }

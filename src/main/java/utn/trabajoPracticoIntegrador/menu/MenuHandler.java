@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package utn.trabajoPracticoIntegrador.menu;
 
 import java.time.LocalDate;
@@ -14,10 +10,6 @@ import utn.trabajoPracticoIntegrador.entities.Paciente;
 import utn.trabajoPracticoIntegrador.service.HistoriaClinicaService;
 import utn.trabajoPracticoIntegrador.service.PacienteService;
 
-/**
- *
- * @author Cristian
- */
 public class MenuHandler {
 
     private final Scanner scanner;

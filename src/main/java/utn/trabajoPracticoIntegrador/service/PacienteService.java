@@ -64,7 +64,8 @@ public class PacienteService implements GenericService<Paciente> {
             conn.commit();
         } catch (Exception e) {
             if (conn != null) conn.rollback();
-            throw new SQLException("Error al insertar paciente con Historia: " + e.getMessage(), e);
+            System.out.println("Rollback ejecutado correctamente.");
+            throw new SQLException("Error al insertar paciente : " + e.getMessage(), e);
         } finally {
             if (conn != null) {
                 conn.setAutoCommit(true);
