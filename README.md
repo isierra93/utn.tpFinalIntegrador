@@ -113,3 +113,6 @@ Este proyecto fue desarrollado en grupo por:
 - Nidia Samaniego
 - Ivan Sierra
 - Cristian Siles
+
+Link video:
+https://youtu.be/EZ--aU8dmZU
