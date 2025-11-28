@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  hospital_db:
+    image: mysql:8.4
+    container_name: mysql_hospital_java
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: db_integrador
+    ports:
+      - "3306:3306"
+    volumes:
+      # Esto guarda los datos permanentemente en tu disco
+      - mysql_hospital_data:/var/lib/mysql
+      # ESTO CARGA TU SCRIPT AL INICIAR
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  mysql_hospital_data:
