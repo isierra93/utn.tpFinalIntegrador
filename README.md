@@ -66,7 +66,7 @@ Para cambiar la configuración, usar el archivo dentro de la carpeta resources: 
 
 ./src/main/resources/db.properties
 
-##Datos precargados, se aplican con el script.sql
+##Datos precargados, se aplican con el init.sql
 db.url=jdbc:mysql://127.0.0.1:3306/db_integrador
 db.user=usuario_hospital
 db.password=abc123

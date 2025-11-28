@@ -6,7 +6,9 @@
  Usuario: usuario_hospital
 ==============================================================
 */
+-- Forzamos la lectura en utf-8 para evitar errores con tildes.
 
+SET NAMES 'utf8mb4';
 -- ---
 -- 0. PREPARACIÓN
 -- ---
@@ -14,7 +16,7 @@
 DROP DATABASE IF EXISTS db_integrador;
 
 -- Borra el usuario si ya existe
-DROP USER IF EXISTS 'usuario_hospital'@'localhost';
+DROP USER IF EXISTS 'usuario_hospital'@'%';
 
 -- ---
 -- 1. CREACIÓN DE LA BASE DE DATOS
@@ -117,13 +119,13 @@ DELIMITER ;
 -- ---
 
 -- Crear el usuario que solo se conectará localmente
-CREATE USER 'usuario_hospital'@'localhost'
+CREATE USER 'usuario_hospital'@'%'
 IDENTIFIED BY 'abc123';
 
 -- Dar permisos de CRUD (Crear, Leer, Actualizar, Borrar)
 -- ÚNICAMENTE sobre todas las tablas (.*) de 'db_integrador'
 GRANT SELECT, INSERT, UPDATE, DELETE
-ON db_integrador.* TO 'usuario_hospital'@'localhost';
+ON db_integrador.* TO 'usuario_hospital'@'%';
 
 -- Aplicar los cambios de privilegios
 FLUSH PRIVILEGES;
@@ -139,23 +141,23 @@ USE db_integrador;
 -- Paciente 1: Juan Perez
 -- Primero creamos su historia clínica
 INSERT INTO db_integrador.historiaclinica
-  (nroHistoria, grupoSanguineo, antecedentes, medicacionActual)
+  (nroHistoria, grupoSanguineo, antecedentes, medicacionActual, observaciones)
 VALUES
-  ('HC1001', 'O+', 'Alergia al polen', 'Loratadina 10mg');
+  ('HC1001', 'O+', 'Alergia al polen', 'Loratadina 10mg', "");
 
 -- Ahora creamos al paciente, vinculándolo con la historia clínica
 -- recién creada usando LAST_INSERT_ID()
 INSERT INTO db_integrador.paciente
   (nombre, apellido, dni, fechaNacimiento, historia_clinica_id)
 VALUES
-  ('Juan', 'Perez', '30111222', '1985-04-12', LAST_INSERT_ID());
+  ('Juan', 'Pérez', '30111222', '1985-04-12', LAST_INSERT_ID());
 
 
 -- Paciente 2: Maria Garcia
 INSERT INTO db_integrador.historiaclinica
-  (nroHistoria, grupoSanguineo, observaciones)
+  (nroHistoria, grupoSanguineo, antecedentes, medicacionActual, observaciones)
 VALUES
-  ('HC1002', 'A-', 'Cirugía de apéndice en 2010');
+  ('HC1002', 'A-', "", "",'Cirugía de apéndice en 2010');
 
 INSERT INTO db_integrador.paciente
   (nombre, apellido, dni, fechaNacimiento, historia_clinica_id)
@@ -164,9 +166,9 @@ VALUES
 
 -- Paciente 3: Carlos Lopez (Ejemplo de campos nulos)
 INSERT INTO db_integrador.historiaclinica
-  (nroHistoria, grupoSanguineo)
+  (nroHistoria, grupoSanguineo, antecedentes, medicacionActual, observaciones)
 VALUES
-  ('HC1003', 'B+');
+  ('HC1003', 'B+', "", "", "");
 
 INSERT INTO db_integrador.paciente
   (nombre, apellido, dni, fechaNacimiento, historia_clinica_id)
