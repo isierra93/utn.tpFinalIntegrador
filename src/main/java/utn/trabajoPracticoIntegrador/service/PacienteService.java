@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package utn.trabajoPracticoIntegrador.service;
 
 import java.sql.Connection;
@@ -13,10 +9,7 @@ import utn.trabajoPracticoIntegrador.dao.PacienteDao;
 import utn.trabajoPracticoIntegrador.entities.HistoriaClinica;
 import utn.trabajoPracticoIntegrador.entities.Paciente;
 
-/**
- *
- * @author Cristian
- */
+
 public class PacienteService implements GenericService<Paciente> {
 
     private final PacienteDao pacienteDao;
