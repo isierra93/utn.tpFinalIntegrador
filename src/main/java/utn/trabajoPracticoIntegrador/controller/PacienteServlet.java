@@ -14,6 +14,7 @@ import utn.trabajoPracticoIntegrador.service.HistoriaClinicaService;
 import utn.trabajoPracticoIntegrador.service.PacienteService;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -51,12 +52,32 @@ public class PacienteServlet extends HttpServlet {
                 req.setAttribute("listaPacientes", pacientes);
                 req.getRequestDispatcher("pacientes.jsp").forward(req, res);
                 break;
+
+            case "editar":
+                Long id = Long.parseLong(req.getParameter("id"));
+                Paciente paciente = null;
+                try {
+                    paciente = pacienteService.getById(id);
+
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+
+                if (paciente == null) {
+                res.sendRedirect("pacientes");
+                }
+
+                req.setAttribute("paciente", paciente);
+                req.getRequestDispatcher("crearPacientes.jsp").forward(req, res);
+
+                break;
         }
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException {
         //Datos del Paciente
+        String idStr = req.getParameter("id");
         String nombre = req.getParameter("nombre");
         String apellido = req.getParameter("apellido");
         String dni = req.getParameter("dni");
@@ -69,10 +90,21 @@ public class PacienteServlet extends HttpServlet {
         String medicacionActual = req.getParameter("medicacionActual");
         String observaciones = req.getParameter("observaciones");
 
+
         try {
-            HistoriaClinica historiaClinica = new HistoriaClinica(null, false, nroHistoria, grupoSanguineo, antecedentes, medicacionActual, observaciones);
-            Paciente paciente = new Paciente(null, false, nombre, apellido, dni, LocalDate.parse(fechaNacimiento) , historiaClinica );
-            pacienteService.insertar(paciente);
+            if (idStr == null || idStr.isEmpty()) {
+                HistoriaClinica historiaClinica = new HistoriaClinica(null, false, nroHistoria, grupoSanguineo, antecedentes, medicacionActual, observaciones);
+                Paciente paciente = new Paciente(null, false, nombre, apellido, dni, LocalDate.parse(fechaNacimiento) , historiaClinica );
+                pacienteService.insertar(paciente);
+            }else {
+                Long id = Long.parseLong(idStr);
+                Long idHistoria = Long.parseLong(req.getParameter("idHistoria"));
+                HistoriaClinica historiaClinica = new HistoriaClinica(idHistoria, false, nroHistoria, grupoSanguineo, antecedentes, medicacionActual, observaciones);
+                Paciente paciente = new Paciente(id, false, nombre, apellido, dni, LocalDate.parse(fechaNacimiento) , historiaClinica );
+
+                pacienteService.actualizar(paciente);
+            }
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
