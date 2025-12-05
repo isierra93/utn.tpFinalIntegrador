@@ -54,10 +54,10 @@ public class PacienteServlet extends HttpServlet {
                 break;
 
             case "editar":
-                Long id = Long.parseLong(req.getParameter("id"));
+                Long idActualizar = Long.parseLong(req.getParameter("id"));
                 Paciente paciente = null;
                 try {
-                    paciente = pacienteService.getById(id);
+                    paciente = pacienteService.getById(idActualizar);
 
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
@@ -65,10 +65,24 @@ public class PacienteServlet extends HttpServlet {
 
                 if (paciente == null) {
                 res.sendRedirect("pacientes");
+                return;
                 }
 
                 req.setAttribute("paciente", paciente);
                 req.getRequestDispatcher("crearPacientes.jsp").forward(req, res);
+
+                break;
+
+            case "eliminar":
+                Long idEliminar = Long.parseLong(req.getParameter("id"));
+
+                try {
+                    pacienteService.eliminar(idEliminar);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+
+                res.sendRedirect("pacientes");
 
                 break;
         }

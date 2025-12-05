@@ -9,6 +9,8 @@
 <body>
     <h1>Pacientes Registrados</h1>
     <a href="pacientes?accion=nuevo">Agregar Paciente</a>
+    <br>
+    <br>
     <table border="1">
         <thead>
             <tr>
@@ -16,7 +18,8 @@
                 <th>Nombre</th>
                 <th>Apellido</th>
                 <th>DNI</th>
-                <th>Acciones</th>
+                <th>Modificar</th>
+                <th>Eliminar</th>
             </tr>
         </thead>
         <tbody>
@@ -28,6 +31,9 @@
                     <td>${p.dni}</td>
                     <td>
                         <a href="pacientes?accion=editar&id=${p.id}">Editar</a>
+                    </td>
+                    <td>
+                        <a href="pacientes?accion=eliminar&id=${p.id}">✖️</a>
                     </td>
                 </tr>
             </c:forEach>
