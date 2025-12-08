@@ -1,7 +1,6 @@
 package utn.trabajoPracticoIntegrador.controller;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -14,7 +13,6 @@ import utn.trabajoPracticoIntegrador.service.HistoriaClinicaService;
 import utn.trabajoPracticoIntegrador.service.PacienteService;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 @WebServlet(name = "PacienteServletJson", urlPatterns = {"/api/pacientes"})
@@ -45,6 +43,23 @@ public class PacienteServletJson extends HttpServlet {
         mapper.writeValue(res.getWriter() , listaPacientes);
 
     }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException {
+
+        Paciente nuevoPaciente = mapper.readValue(req.getReader(), Paciente.class);
+
+        try {
+            pacienteService.insertar(nuevoPaciente);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al guardar el JSON", e);
+        }
+
+        res.setContentType("application/json;charset=UTF-8");
+        res.setStatus(201);
+        mapper.writeValue(res.getWriter(), nuevoPaciente);
+    }
+
 
 
 }
